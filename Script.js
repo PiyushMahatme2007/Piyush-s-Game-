@@ -1,142 +1,109 @@
-let board;
-let currentPlayer = "X";
-let gameState = [];
-let moveHistory = [];
-let timerInterval = null;
-let timeLeft = 10;
-let gameActive = false;
+let board = document.getElementById("board");
+let statusText = document.getElementById("status");
+let p1Name = document.getElementById("p1Name");
+let p2Name = document.getElementById("p2Name");
+let p1Timer = document.getElementById("p1Timer");
+let p2Timer = document.getElementById("p2Timer");
 
-window.onload = function () {
-    board = document.getElementById("board");
-};
+let cells = [];
+let currentPlayer = "X";
+let gameActive = false;
+let timer;
+let timeLeft = 10;
+let moveHistory = [];
 
 function startGame() {
-
-    gameState = ["", "", "", "", "", "", "", "", ""];
+    board.innerHTML = "";
+    cells = [];
     moveHistory = [];
     gameActive = true;
 
-    let p1 = document.getElementById("player1Input").value;
-    let p2 = document.getElementById("player2Input").value;
+    let name1 = document.getElementById("player1Input").value.trim();
+    let name2 = document.getElementById("player2Input").value.trim();
+    let firstPlayer = document.getElementById("firstTurn").value;
 
-    document.getElementById("p1Name").innerText = p1 || "Player 1";
-    document.getElementById("p2Name").innerText = p2 || "Player 2";
+    p1Name.textContent = name1 || "Player 1";
+    p2Name.textContent = name2 || "Player 2";
 
-    let firstTurn = document.getElementById("firstTurn").value;
-    currentPlayer = firstTurn === "1" ? "X" : "O";
+    currentPlayer = firstPlayer;
 
-    createBoard();
+    for (let i = 0; i < 9; i++) {
+        let cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.addEventListener("click", () => cellClick(i));
+        board.appendChild(cell);
+        cells.push("");
+    }
+
+    updateStatus();
     startTimer();
 }
 
-function createBoard() {
+function cellClick(index) {
+    if (!gameActive || cells[index] !== "") return;
 
-    board.innerHTML = "";
-
-    for (let i = 0; i < 9; i++) {
-
-        let cell = document.createElement("div");
-        cell.classList.add("cell");
-        cell.innerText = gameState[i];
-
-        cell.addEventListener("click", function () {
-            if (gameActive) makeMove(i);
-        });
-
-        board.appendChild(cell);
-    }
-}
-
-function makeMove(index) {
-
-    if (gameState[index] !== "") return;
-
-    gameState[index] = currentPlayer;
+    cells[index] = currentPlayer;
+    board.children[index].textContent = currentPlayer;
     moveHistory.push(index);
-
-    if (moveHistory.length > 6) {
-        let removeIndex = moveHistory.shift();
-        gameState[removeIndex] = "";
-    }
-
-    createBoard();
-
-    if (checkWinner()) {
-        clearInterval(timerInterval);
-        document.getElementById("status").innerText =
-            (currentPlayer === "X"
-                ? document.getElementById("p1Name").innerText
-                : document.getElementById("p2Name").innerText) + " Wins!";
-        gameActive = false;
-        return;
-    }
 
     switchPlayer();
 }
 
 function switchPlayer() {
     currentPlayer = currentPlayer === "X" ? "O" : "X";
-    startTimer();
+    updateStatus();
+    resetTimer();
+}
+
+function updateStatus() {
+    statusText.textContent = currentPlayer + "'s Turn";
 }
 
 function startTimer() {
-
-    clearInterval(timerInterval);
     timeLeft = 10;
     updateTimerDisplay();
 
-    timerInterval = setInterval(function () {
-
+    timer = setInterval(() => {
         timeLeft--;
         updateTimerDisplay();
 
-        if (timeLeft < 0) {
-            clearInterval(timerInterval);
-            let winnerName =
-                currentPlayer === "X"
-                    ? document.getElementById("p2Name").innerText
-                    : document.getElementById("p1Name").innerText;
-
-            document.getElementById("status").innerText =
-                "Time Over! " + winnerName + " Wins!";
-            gameActive = false;
+        if (timeLeft <= 0) {
+            switchPlayer();
         }
-
     }, 1000);
 }
 
-function updateTimerDisplay() {
+function resetTimer() {
+    clearInterval(timer);
+    startTimer();
+}
 
+function updateTimerDisplay() {
     if (currentPlayer === "X") {
-        document.getElementById("p1Timer").innerText = timeLeft;
-        document.getElementById("p2Timer").innerText = "";
+        p1Timer.textContent = timeLeft;
+        p2Timer.textContent = 10;
     } else {
-        document.getElementById("p2Timer").innerText = timeLeft;
-        document.getElementById("p1Timer").innerText = "";
+        p2Timer.textContent = timeLeft;
+        p1Timer.textContent = 10;
     }
 }
 
 function undoMove() {
-
-    if (!gameActive) return;
     if (moveHistory.length === 0) return;
 
-    clearInterval(timerInterval);
-
-    let last = moveHistory.pop();
-    gameState[last] = "";
-
-    currentPlayer = currentPlayer === "X" ? "O" : "X";
-
-    createBoard();
-    startTimer();
+    let lastMove = moveHistory.pop();
+    cells[lastMove] = "";
+    board.children[lastMove].textContent = "";
+    switchPlayer();
 }
 
 function restartGame() {
-    clearInterval(timerInterval);
-    document.getElementById("status").innerText = "";
-    startGame();
-}
+    clearInterval(timer);
+    board.innerHTML = "";
+    statusText.textContent = "";
+    p1Timer.textContent = "10";
+    p2Timer.textContent = "10";
+}}
 
 function checkWinner() {
 
