@@ -1,3 +1,5 @@
+window.onload = function () {
+
 let board = document.getElementById("board");
 let statusText = document.getElementById("status");
 let p1Name = document.getElementById("p1Name");
@@ -12,7 +14,8 @@ let timer;
 let timeLeft = 10;
 let moveHistory = [];
 
-function startGame() {
+window.startGame = function () {
+
     board.innerHTML = "";
     cells = [];
     moveHistory = [];
@@ -30,14 +33,16 @@ function startGame() {
     for (let i = 0; i < 9; i++) {
         let cell = document.createElement("div");
         cell.classList.add("cell");
-        cell.addEventListener("click", () => cellClick(i));
+        cell.addEventListener("click", function () {
+            cellClick(i);
+        });
         board.appendChild(cell);
         cells.push("");
     }
 
     updateStatus();
     startTimer();
-}
+};
 
 function cellClick(index) {
     if (!gameActive || cells[index] !== "") return;
@@ -63,7 +68,7 @@ function startTimer() {
     timeLeft = 10;
     updateTimerDisplay();
 
-    timer = setInterval(() => {
+    timer = setInterval(function () {
         timeLeft--;
         updateTimerDisplay();
 
@@ -88,28 +93,24 @@ function updateTimerDisplay() {
     }
 }
 
-function undoMove() {
+window.undoMove = function () {
     if (moveHistory.length === 0) return;
 
     let lastMove = moveHistory.pop();
     cells[lastMove] = "";
     board.children[lastMove].textContent = "";
     switchPlayer();
-}
+};
 
-function restartGame() {
+window.restartGame = function () {
     clearInterval(timer);
     board.innerHTML = "";
     statusText.textContent = "";
     p1Timer.textContent = "10";
     p2Timer.textContent = "10";
-}}
+};
 
-function checkWinner() {
-
-    const wins = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
+};        [0,3,6],[1,4,7],[2,5,8],
         [0,4,8],[2,4,6]
     ];
 
